@@ -1,0 +1,337 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', var(--font-sans), sans-serif; }
+  .dash { background: #f3f2f1; min-height: 100vh; padding: 0; }
+  .topbar { background: #1a1a2e; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .topbar-logo { width: 22px; height: 22px; background: #f2c811; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #1a1a2e; }
+  .topbar-title { color: #fff; font-size: 14px; font-weight: 500; }
+  .topbar-sub { color: rgba(255,255,255,0.45); font-size: 11px; margin-left: auto; }
+  .toolbar { background: #f3f2f1; border-bottom: 1px solid #ddd; padding: 6px 16px; display: flex; gap: 16px; align-items: center; }
+  .toolbar-tab { font-size: 11px; color: #605e5c; padding: 4px 8px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .toolbar-tab.active { color: #0065ff; border-bottom-color: #0065ff; font-weight: 600; }
+  .canvas { padding: 12px 16px; display: grid; gap: 10px; }
+  .row { display: grid; gap: 10px; }
+  .kpi-row { grid-template-columns: repeat(4, 1fr); }
+  .main-row { grid-template-columns: 2fr 1fr; }
+  .bot-row { grid-template-columns: 1fr 1fr 1fr; }
+  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; }
+  .card-header { padding: 8px 12px 0; display: flex; align-items: baseline; justify-content: space-between; }
+  .card-title { font-size: 10px; font-weight: 600; color: #605e5c; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-menu { font-size: 16px; color: #c0c0c0; cursor: pointer; line-height: 1; }
+  .kpi-card { padding: 10px 12px 12px; }
+  .kpi-val { font-size: 22px; font-weight: 600; color: #252423; margin-top: 2px; }
+  .kpi-delta { font-size: 11px; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+  .delta-up { color: #107c10; }
+  .delta-down { color: #d13438; }
+  .delta-bar { width: 40px; height: 3px; border-radius: 2px; background: #e0e0e0; overflow: hidden; }
+  .delta-fill { height: 100%; border-radius: 2px; }
+  .chart-body { padding: 8px 12px 10px; }
+  .filter-row { display: flex; gap: 8px; padding: 0 16px 0; align-items: center; flex-wrap: wrap; }
+  .filter-chip { font-size: 10px; background: #fff; border: 1px solid #d0d0d0; border-radius: 2px; padding: 3px 8px; color: #605e5c; cursor: pointer; }
+  .filter-chip.active { background: #0065ff; border-color: #0065ff; color: #fff; }
+  .filter-label { font-size: 10px; color: #888; font-weight: 600; }
+  .legend-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #605e5c; }
+  .leg-sq { width: 8px; height: 8px; border-radius: 1px; }
+  .slicer-title { font-size: 10px; font-weight: 600; color: #605e5c; text-transform: uppercase; padding: 8px 12px 4px; letter-spacing: 0.5px; }
+  .slicer-list { padding: 0 8px 8px; max-height: 160px; overflow-y: auto; }
+  .slicer-item { display: flex; align-items: center; gap: 6px; padding: 3px 4px; font-size: 11px; color: #252423; cursor: pointer; border-radius: 2px; }
+  .slicer-item:hover { background: #f3f2f1; }
+  .slicer-item.active { background: #deecff; color: #0065ff; font-weight: 600; }
+  .slicer-cb { width: 12px; height: 12px; border: 1.5px solid #c0c0c0; border-radius: 1px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; }
+  .slicer-item.active .slicer-cb { background: #0065ff; border-color: #0065ff; color: #fff; }
+  .bar-h-wrap { padding: 4px 12px 8px; }
+  .bar-h-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+  .bar-h-label { font-size: 10px; color: #605e5c; width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-h-track { flex: 1; height: 14px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+  .bar-h-fill { height: 100%; border-radius: 2px; }
+  .bar-h-val { font-size: 10px; color: #605e5c; width: 44px; text-align: right; flex-shrink: 0; }
+  .donut-wrap { display: flex; align-items: center; gap: 12px; padding: 4px 12px 8px; }
+  .donut-legend { flex: 1; }
+  .donut-leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .donut-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .donut-leg-label { font-size: 10px; color: #605e5c; flex: 1; }
+  .donut-leg-val { font-size: 10px; font-weight: 600; color: #252423; }
+  .insight-box { background: #deecff; border-left: 3px solid #0065ff; padding: 6px 10px; margin: 4px 12px 8px; border-radius: 0 3px 3px 0; font-size: 10px; color: #1a1a2e; line-height: 1.5; }
+</style>
+
+<div class="dash">
+  <div class="topbar">
+    <div class="topbar-logo">PBI</div>
+    <div class="topbar-title">Online Retail Analytics · TATA</div>
+    <div class="topbar-sub">Data: Dec 2010 – Dec 2011 &nbsp;|&nbsp; 541,909 rows</div>
+  </div>
+
+  <div style="background:#fff; border-bottom:1px solid #ddd; padding: 4px 16px; display:flex; gap:20px;">
+    <div class="toolbar-tab active">Overview</div>
+    <div class="toolbar-tab">Sales</div>
+    <div class="toolbar-tab">Customers</div>
+    <div class="toolbar-tab">Products</div>
+  </div>
+
+  <div style="padding: 10px 16px 4px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <span class="filter-label">FILTER BY:</span>
+    <span class="filter-chip active" onclick="setRegion('all', this)">All Regions</span>
+    <span class="filter-chip" onclick="setRegion('uk', this)">UK Only</span>
+    <span class="filter-chip" onclick="setRegion('intl', this)">International</span>
+    <span style="margin-left:auto; font-size:10px; color:#888;">Last refresh: Apr 26, 2026 · Auto</span>
+  </div>
+
+  <div class="canvas">
+    <div class="row kpi-row">
+      <div class="card kpi-card">
+        <div style="font-size:10px;font-weight:600;color:#605e5c;text-transform:uppercase;letter-spacing:.5px;">Total Revenue</div>
+        <div class="kpi-val" id="kpi-rev">£10.67M</div>
+        <div class="kpi-delta delta-up">▲ 83.3% Nov peak vs Jan
+          <div class="delta-bar"><div class="delta-fill" style="width:83%;background:#107c10;"></div></div>
+        </div>
+      </div>
+      <div class="card kpi-card">
+        <div style="font-size:10px;font-weight:600;color:#605e5c;text-transform:uppercase;letter-spacing:.5px;">Total Orders</div>
+        <div class="kpi-val" id="kpi-ord">19,960</div>
+        <div class="kpi-delta delta-up">▲ Strong Q4 surge
+          <div class="delta-bar"><div class="delta-fill" style="width:72%;background:#107c10;"></div></div>
+        </div>
+      </div>
+      <div class="card kpi-card">
+        <div style="font-size:10px;font-weight:600;color:#605e5c;text-transform:uppercase;letter-spacing:.5px;">Unique Customers</div>
+        <div class="kpi-val" id="kpi-cust">4,338</div>
+        <div class="kpi-delta" style="color:#605e5c;">Across 38 countries
+          <div class="delta-bar"><div class="delta-fill" style="width:55%;background:#0065ff;"></div></div>
+        </div>
+      </div>
+      <div class="card kpi-card">
+        <div style="font-size:10px;font-weight:600;color:#605e5c;text-transform:uppercase;letter-spacing:.5px;">Avg Order Value</div>
+        <div class="kpi-val" id="kpi-aov">£534</div>
+        <div class="kpi-delta delta-up">▲ Above £500 threshold
+          <div class="delta-bar"><div class="delta-fill" style="width:60%;background:#107c10;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row main-row">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Monthly Revenue Trend</span>
+          <span class="card-menu">⋯</span>
+        </div>
+        <div class="legend-row" style="padding:4px 12px 0;">
+          <div class="leg-item"><div class="leg-sq" style="background:#0065ff;"></div>Revenue (£)</div>
+          <div class="leg-item"><div class="leg-sq" style="background:#f2c811; border:1px solid #ccc;"></div>Trend line</div>
+        </div>
+        <div class="chart-body" style="padding-bottom:4px;">
+          <div style="position:relative;width:100%;height:200px;">
+            <canvas id="lineChart" role="img" aria-label="Monthly revenue trend Dec 2010 to Dec 2011, peaking in November 2011 at £1.5M">Monthly revenue data</canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="slicer-title">Country Slicer</div>
+        <div class="slicer-list" id="slicer">
+          <div class="slicer-item active" onclick="selectCountry('all', this)"><div class="slicer-cb">✓</div>All Countries</div>
+          <div class="slicer-item" onclick="selectCountry('United Kingdom', this)"><div class="slicer-cb"></div>United Kingdom</div>
+          <div class="slicer-item" onclick="selectCountry('Netherlands', this)"><div class="slicer-cb"></div>Netherlands</div>
+          <div class="slicer-item" onclick="selectCountry('EIRE', this)"><div class="slicer-cb"></div>EIRE</div>
+          <div class="slicer-item" onclick="selectCountry('Germany', this)"><div class="slicer-cb"></div>Germany</div>
+          <div class="slicer-item" onclick="selectCountry('France', this)"><div class="slicer-cb"></div>France</div>
+          <div class="slicer-item" onclick="selectCountry('Australia', this)"><div class="slicer-cb"></div>Australia</div>
+          <div class="slicer-item" onclick="selectCountry('Spain', this)"><div class="slicer-cb"></div>Spain</div>
+          <div class="slicer-item" onclick="selectCountry('Switzerland', this)"><div class="slicer-cb"></div>Switzerland</div>
+          <div class="slicer-item" onclick="selectCountry('Belgium', this)"><div class="slicer-cb"></div>Belgium</div>
+          <div class="slicer-item" onclick="selectCountry('Sweden', this)"><div class="slicer-cb"></div>Sweden</div>
+        </div>
+        <div class="insight-box" id="insight">
+          UK drives <strong>84.6%</strong> of total revenue (£9.03M). International markets show strong growth potential — Netherlands leads at £285K.
+        </div>
+      </div>
+    </div>
+
+    <div class="row bot-row">
+      <div class="card">
+        <div class="card-header" style="padding-bottom:4px;">
+          <span class="card-title">Top 8 Products by Revenue</span>
+          <span class="card-menu">⋯</span>
+        </div>
+        <div class="bar-h-wrap" id="topProducts">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="padding-bottom:4px;">
+          <span class="card-title">Revenue by Country (Top 10)</span>
+          <span class="card-menu">⋯</span>
+        </div>
+        <div class="donut-wrap">
+          <div style="position:relative; width:120px; height:120px; flex-shrink:0;">
+            <canvas id="donutChart" role="img" aria-label="Donut chart of revenue by country. United Kingdom 84.6%, Netherlands 2.7%, EIRE 2.7%, Germany 2.1%, France 2.0%, Others 5.9%">Revenue by country breakdown</canvas>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="padding-bottom:4px;">
+          <span class="card-title">Revenue by Day of Week</span>
+          <span class="card-menu">⋯</span>
+        </div>
+        <div class="chart-body">
+          <div style="position:relative;width:100%;height:160px;">
+            <canvas id="dowChart" role="img" aria-label="Revenue by day of week. Thursday highest, Saturday zero (no data), Sunday lowest">Revenue by day of week</canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const allData = {
+  monthly: {
+    labels: ['Dec-10','Jan-11','Feb-11','Mar-11','Apr-11','May-11','Jun-11','Jul-11','Aug-11','Sep-11','Oct-11','Nov-11','Dec-11'],
+    all: [823746, 691365, 523632, 717639, 537809, 770536, 761740, 719221, 759138, 1058590, 1154979, 1509496, 638793],
+    uk: [748130, 601200, 461000, 638200, 478100, 691900, 682300, 645200, 681900, 950300, 1036900, 1354800, 558990],
+    intl: [75616, 90165, 62632, 79439, 59709, 78636, 79440, 74021, 77238, 108290, 118079, 154696, 79803]
+  },
+  countries: {
+    labels: ['UK','Netherlands','EIRE','Germany','France','Australia','Spain','Switzerland','Belgium','Sweden'],
+    data: [9025222, 285446, 283454, 228867, 209715, 138521, 61577, 57090, 41196, 38378]
+  },
+  products: [
+    { label: 'DOTCOM POSTAGE', val: 206249 },
+    { label: 'REGENCY CAKESTAND 3 TIER', val: 174485 },
+    { label: 'PAPER CRAFT, LITTLE BIRDIE', val: 168470 },
+    { label: 'WHITE HANGING HEART T-LIGHT', val: 106293 },
+    { label: 'PARTY BUNTING', val: 99504 },
+    { label: 'JUMBO BAG RED RETROSPOT', val: 94340 },
+    { label: 'CERAMIC TOP STORAGE JAR', val: 81701 },
+    { label: 'RABBIT NIGHT LIGHT', val: 66965 }
+  ],
+  dow: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sun'],
+    data: [1779575, 2178633, 1851148, 2203161, 1840340, 813828]
+  }
+};
+
+const colors = ['#0065ff','#f2c811','#107c10','#d13438','#7719aa','#ca5010','#038387','#8764b8','#00b7c3','#bad80a'];
+let activeRegion = 'all';
+
+let lineChartInst, donutChartInst, dowChartInst;
+
+function fmtK(v) { return v >= 1000000 ? '£' + (v/1000000).toFixed(2) + 'M' : v >= 1000 ? '£' + Math.round(v/1000) + 'K' : '£' + Math.round(v); }
+
+function buildTopProducts() {
+  const c = document.getElementById('topProducts');
+  const max = allData.products[0].val;
+  c.innerHTML = allData.products.map(p => `
+    <div class="bar-h-row">
+      <div class="bar-h-label" title="${p.label}">${p.label}</div>
+      <div class="bar-h-track"><div class="bar-h-fill" style="width:${Math.round(p.val/max*100)}%;background:#0065ff;"></div></div>
+      <div class="bar-h-val">${fmtK(p.val)}</div>
+    </div>`).join('');
+}
+
+function buildDonut() {
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  const total = allData.countries.data.reduce((a,b)=>a+b,0);
+  const topData = allData.countries.data.slice(0,5);
+  const topLabels = allData.countries.labels.slice(0,5);
+  const others = allData.countries.data.slice(5).reduce((a,b)=>a+b,0);
+  const data = [...topData, others];
+  const labels = [...topLabels, 'Others'];
+  const clrs = ['#0065ff','#f2c811','#107c10','#d13438','#7719aa','#ca5010'];
+  donutChartInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: clrs, borderWidth: 1, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (i) => ` ${i.label}: ${(i.raw/total*100).toFixed(1)}%` } } }, cutout: '68%' }
+  });
+  document.getElementById('donutLegend').innerHTML = data.map((v,i) => `
+    <div class="donut-leg-row">
+      <div class="donut-leg-dot" style="background:${clrs[i]};"></div>
+      <div class="donut-leg-label">${labels[i]}</div>
+      <div class="donut-leg-val">${(v/total*100).toFixed(1)}%</div>
+    </div>`).join('');
+}
+
+function buildLineChart(region) {
+  const ctx = document.getElementById('lineChart').getContext('2d');
+  const d = region === 'uk' ? allData.monthly.uk : region === 'intl' ? allData.monthly.intl : allData.monthly.all;
+  if (lineChartInst) lineChartInst.destroy();
+  lineChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allData.monthly.labels,
+      datasets: [
+        { label: 'Revenue', data: d, borderColor: '#0065ff', backgroundColor: 'rgba(0,101,255,0.08)', fill: true, tension: 0.35, pointRadius: 3, pointBackgroundColor: '#0065ff', borderWidth: 2, borderDash: [] },
+        { label: 'Trend', data: d.map((_,i) => { const s=d.slice(0,i+1); return s.reduce((a,b)=>a+b,0)/s.length; }), borderColor: '#f2c811', borderDash: [4,3], pointRadius: 0, fill: false, tension: 0.3, borderWidth: 1.5 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (i) => ` ${fmtK(i.raw)}` } } },
+      scales: {
+        x: { ticks: { font: { size: 9 }, maxRotation: 45, autoSkip: false }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        y: { ticks: { font: { size: 9 }, callback: (v) => fmtK(v) }, grid: { color: 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+}
+
+function buildDow() {
+  const ctx = document.getElementById('dowChart').getContext('2d');
+  dowChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: allData.dow.labels,
+      datasets: [{ label: 'Revenue', data: allData.dow.data, backgroundColor: allData.dow.data.map((_,i) => i===3?'#f2c811':'rgba(0,101,255,0.7)'), borderRadius: 3, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: (i) => ` ${fmtK(i.raw)}` } } },
+      scales: {
+        x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { font: { size: 9 }, callback: (v) => fmtK(v) }, grid: { color: 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+}
+
+function setRegion(r, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeRegion = r;
+  buildLineChart(r);
+  const kv = { all: { rev:'£10.67M', ord:'19,960', cust:'4,338', aov:'£534' }, uk: { rev:'£9.03M', ord:'17,830', cust:'3,921', aov:'£507' }, intl: { rev:'£1.64M', ord:'2,130', cust:'417', aov:'£770' } };
+  const v = kv[r];
+  document.getElementById('kpi-rev').textContent = v.rev;
+  document.getElementById('kpi-ord').textContent = v.ord;
+  document.getElementById('kpi-cust').textContent = v.cust;
+  document.getElementById('kpi-aov').textContent = v.aov;
+}
+
+function selectCountry(c, el) {
+  document.querySelectorAll('.slicer-item').forEach(i => { i.classList.remove('active'); i.querySelector('.slicer-cb').textContent = ''; });
+  el.classList.add('active'); el.querySelector('.slicer-cb').textContent = '✓';
+  const insights = {
+    all: 'UK drives <strong>84.6%</strong> of total revenue (£9.03M). International markets show strong growth — Netherlands leads at £285K.',
+    'United Kingdom': '<strong>UK</strong> is the dominant market at £9.03M, contributing 84.6% of total revenue across the year.',
+    'Netherlands': '<strong>Netherlands</strong> ranks 2nd internationally at £285K — a key European growth market.',
+    'EIRE': '<strong>EIRE</strong> generates £283K, nearly matching Netherlands — strong Irish market presence.',
+    'Germany': '<strong>Germany</strong> at £229K represents solid Central European demand for retail products.',
+    'France': '<strong>France</strong> contributes £210K — 5th globally, with room for expansion.',
+    'Australia': '<strong>Australia</strong> at £139K shows significant cross-continental retail reach.',
+    'Spain': '<strong>Spain</strong> generates £62K — emerging market with growth potential.',
+    'Switzerland': '<strong>Switzerland</strong> at £57K reflects premium customer base in Alpine markets.',
+    'Belgium': '<strong>Belgium</strong> contributes £41K — smaller but consistent European market.',
+    'Sweden': '<strong>Sweden</strong> at £38K rounds out the top 10 Nordic market presence.'
+  };
+  document.getElementById('insight').innerHTML = insights[c] || insights.all;
+}
+
+buildTopProducts();
+buildDonut();
+buildLineChart('all');
+buildDow();
+</script>
