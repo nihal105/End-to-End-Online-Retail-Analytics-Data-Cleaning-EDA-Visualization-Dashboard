@@ -1,4 +1,4 @@
-# End-to-End-Online-Retail-Analytics-Data-Cleaning-EDA-Visualization-Dashboard
+# End-to-End-Online-Retail-Analytics-Data-Cleaning-EDA-and-Visualization
 
 
 ##  Project Overview
