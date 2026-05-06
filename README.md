@@ -5,7 +5,9 @@
 
 This project presents a complete data analytics workflow on an online retail dataset, covering **data cleaning**, **exploratory data analysis (EDA)**, and **interactive dashboard creation**.
 The goal is to transform raw transactional data into meaningful business insights that support decision-making.
+
 ---
+
 ## Dashboard Preview
 <img width="1896" height="1064" alt="image" src="https://github.com/user-attachments/assets/ba4dd5b9-a50f-4209-9426-5470694d1c93" />
 
