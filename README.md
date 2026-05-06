@@ -84,12 +84,6 @@ The goal is to transform raw transactional data into meaningful business insight
 
 ---
 
-##  Dashboard Preview
-
- Open the interactive dashboard file: 
-
----
-
 ##  How to Use
 
 1. Clone this repository
